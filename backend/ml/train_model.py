@@ -69,7 +69,6 @@ def build_pipeline() -> Pipeline:
         max_iter=1500,
         class_weight="balanced",
         solver="lbfgs",
-        multi_class="multinomial",
     )
     rf = RandomForestClassifier(
         n_estimators=150,
