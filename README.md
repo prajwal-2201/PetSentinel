@@ -236,4 +236,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **PetSentinel** - Because every pet deserves world-class care. 🐕‍🦺🐱‍👤</content>
-<parameter name="filePath">c:\Users\vpraj\OneDrive\Desktop\pet\README.md
