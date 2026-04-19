@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #a63300;
+  --color-primary-container: #ff7949;
+  --color-primary-dim: #922c00;
+  --color-on-primary: #ffefeb;
+  --color-on-primary-container: #451000;
+  
+  --color-secondary: #006a35;
+  --color-secondary-container: #6bfe9c;
+  --color-secondary-dim: #005c2d;
+  --color-on-secondary: #cdffd4;
+  
+  --color-tertiary: #006093;
+  --color-tertiary-container: #5cb8fd;
+  --color-tertiary-dim: #005481;
+  --color-on-tertiary: #ebf4ff;
+
+  --color-error: #b31b25;
+  --color-error-container: #fb5151;
+  --color-on-error: #ffefee;
+  --color-on-error-container: #570008;
+
+  --color-surface: #fff4f3;
+  --color-surface-container-low: #ffedeb;
+  --color-surface-container: #ffe2df;
+  --color-surface-container-high: #ffdad7;
+  --color-surface-container-highest: #ffd2ce;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-variant: #ffd2ce;
+  
+  --color-on-surface: #4e211e;
+  --color-on-surface-variant: #834c48;
+  --color-outline: #a36762;
+  --color-outline-variant: #e09c96;
+
+  --font-headline: "Plus Jakarta Sans", sans-serif;
+  --font-body: "Be Vietnam Pro", sans-serif;
+  --font-label: "Be Vietnam Pro", sans-serif;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
+.glass-panel {
+  background: rgba(var(--color-surface-rgb, 255, 244, 243), 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.text-shadow-glow {
+  text-shadow: 0 0 20px rgba(var(--color-primary-container-rgb, 255, 121, 73), 0.5);
+}
+
+/* ── Mode transition animation ──────────────────────────────────────────────── */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(110%); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1);    }
+}
+
+.animate-fade-in-up      { animation: fade-in-up    0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-slide-in-right  { animation: slide-in-right 0.30s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-scale-in        { animation: scale-in       0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-mode-enter      { animation: fade-in-up    0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+

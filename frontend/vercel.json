@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_BACKEND_URL": "https://petsentinel-api.onrender.com",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://uyorhnqptxspxglbepbo.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5b3JobnFwdHhzcHhnbGJlcGJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNzkyNzIsImV4cCI6MjA5MTk1NTI3Mn0.ihas1ZKm-16hbw9Gn5-dBfQzyBR12P2uZh1LTpe2Tk4"
+  }
+}

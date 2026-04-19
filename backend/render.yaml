@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: petsentinel-api
+    runtime: python
+    plan: free
+    region: singapore    # Closest to Bangalore
+
+    buildCommand: |
+      pip install -r requirements.txt gunicorn
+      python -m ml.train_model
+
+    startCommand: >
+      gunicorn main:app
+      -w 2
+      -k uvicorn.workers.UvicornWorker
+      --bind 0.0.0.0:$PORT
+      --timeout 120
+      --keepalive 5
+      --worker-tmp-dir /dev/shm
+
+    healthCheckPath: /health
+
+    envVars:
+      - key: SUPABASE_URL
+        value: https://uyorhnqptxspxglbepbo.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false          # Set via Render dashboard (secret)
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5b3JobnFwdHhzcHhnbGJlcGJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNzkyNzIsImV4cCI6MjA5MTk1NTI3Mn0.ihas1ZKm-16hbw9Gn5-dBfQzyBR12P2uZh1LTpe2Tk4
+      - key: ALLOWED_ORIGINS
+        value: https://petsentinel.vercel.app,http://localhost:3000
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PYTHONDONTWRITEBYTECODE
+        value: "1"
