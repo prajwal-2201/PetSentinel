@@ -2,6 +2,7 @@ services:
   - type: web
     name: petsentinel-api
     runtime: python
+    rootDir: backend
     plan: free
     region: singapore    # Closest to Bangalore
 
