@@ -1,6 +1,4 @@
-import { createBrowserClient, createServerClient } from "@supabase/ssr";
-import { type CookieOptions, type CookieMethodsServer } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createBrowserClient } from "@supabase/ssr";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 export type Database = {
@@ -98,39 +96,3 @@ export function createBrowserSupabaseClient() {
   );
 }
 
-// ── Server Client (for Server Components / Route Handlers) ───────────────────
-export async function createServerSupabaseClient() {
-  const cookieStore = await cookies();
-  return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options as CookieOptions)
-            );
-          } catch {
-            // Suppress: called from Server Component (cookies are read-only)
-          }
-        },
-      },
-    }
-  );
-}
-
-// ── Admin/Service Role Client (for trusted server-side ops) ──────────────────
-// Never expose in browser — server-only
-export function createAdminSupabaseClient() {
-  if (typeof window !== "undefined") {
-    throw new Error("Admin client must only be used server-side.");
-  }
-  return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-}

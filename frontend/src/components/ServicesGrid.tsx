@@ -153,8 +153,10 @@ function LegalModal({ onClose }: { onClose: () => void }) {
   }
 
   async function handleGeneratePDF() {
-    // Basic validation
-    const res = await generateLegalNotice(form as LegalNoticeRequest);
+    setStep("generating");
+    setError(null);
+    try {
+      const res = await generateLegalNotice(form as LegalNoticeRequest);
       await generateNoticePDF(res.notice_text, res.guidelines_cited);
       setStep("done");
     } catch (e) {
