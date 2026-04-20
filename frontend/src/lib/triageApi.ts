@@ -141,10 +141,11 @@ export type LegalShieldResponse = {
   emergency_contact: { name: string; phone: string; hours: string };
 };
 
-export async function getLegalShield(category?: string, jurisdiction?: string): Promise<LegalShieldResponse> {
+export async function getLegalShield(category?: string, jurisdiction?: string, neighborhood?: string): Promise<LegalShieldResponse> {
   const params = new URLSearchParams();
   if (category) params.append("category", category);
   if (jurisdiction) params.append("jurisdiction", jurisdiction);
+  if (neighborhood) params.append("neighborhood", neighborhood);
   
   const qs = params.toString() ? `?${params.toString()}` : "";
   return get<LegalShieldResponse>(`/legal-shield${qs}`);

@@ -138,7 +138,11 @@ function LegalModal({ onClose }: { onClose: () => void }) {
     setLoadingGuidelines(true);
     try {
       // Dynamic location-aware lookup
-      const data = await getLegalShield(undefined, ownerProfile?.city ?? "bangalore");
+      const data = await getLegalShield(
+        undefined, 
+        ownerProfile?.city ?? "bangalore",
+        ownerProfile?.neighborhood
+      );
       setGuidelines(data.guidelines);
       setStep("guidelines");
     } catch {

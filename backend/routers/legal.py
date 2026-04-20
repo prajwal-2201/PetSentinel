@@ -9,6 +9,31 @@ from datetime import date
 
 from data.legal_data import REGIONAL_DATA, NEIGHBORHOOD_OVERRIDES, AWBI_GUIDELINES, LEGAL_NOTICE_TEMPLATE
 
+router = APIRouter(prefix="/legal-shield", tags=["legal"])
+
+class LegalShieldResponse(BaseModel):
+    jurisdiction: str
+    total_guidelines: int
+    guidelines: list
+    summary: str
+    emergency_contact: dict
+
+class LegalNoticeRequest(BaseModel):
+    owner_name: str
+    owner_address: str
+    owner_contact: str
+    rwa_name: str
+    rwa_address: str
+    pin_code: str
+    pet_name: str
+    species: str
+    pet_age: str
+    bbmp_reg: str = "PENDING"
+
+class LegalNoticeResponse(BaseModel):
+    notice_text: str
+    guidelines_cited: List[str]
+    next_steps: List[str]
 
 @router.get("", response_model=LegalShieldResponse, summary="Get regionalized legal guidelines")
 async def get_legal_shield(
