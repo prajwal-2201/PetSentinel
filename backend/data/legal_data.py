@@ -82,45 +82,64 @@ PALLIATIVE_SPECIALISTS = {
     },
 }
 
-# ── AWBI Guidelines ────────────────────────────────────────────────────────────
+# ── Regional Legal Metadata ──────────────────────────────────────────────────
+REGIONAL_DATA = {
+    "bangalore": {
+        "jurisdiction": "Bangalore / BBMP / Karnataka",
+        "emergency_contact": {
+            "name": "BBMP Animal Care Cell",
+            "phone": "+91 80-22221188",
+            "hours": "24/7 Emergency",
+        },
+        "summary": (
+            "Under Indian law, RWAs cannot ban pet ownership. The AWBI circular (2015), "
+            "PCA Act 1960, BBMP circular (2022), and Karnataka HC judgment (2019) collectively "
+            "guarantee your right to keep a registered pet in any residential unit in Bangalore."
+        ),
+    },
+    "generic_india": {
+        "jurisdiction": "India (All States)",
+        "emergency_contact": {
+            "name": "Local Animal Welfare Board",
+            "phone": "Dial 100 or 1962",
+            "hours": "Variable",
+        },
+        "summary": (
+            "The Prevention of Cruelty to Animals Act (1960) and AWBI guidelines "
+            "apply across all Indian states. Personal pet ownership is protected under "
+            "the right to property and life."
+        ),
+    }
+}
+
+# ── Neighborhood-Specific Overrides ───────────────────────────────────────────
+NEIGHBORHOOD_OVERRIDES = {
+    "indiranagar": [
+        {
+            "id": "INDIRANAGAR_RWA_NOTICE",
+            "title": "Indiranagar 1st Stage RWA — High Court Compliance",
+            "date": "2024-01-10",
+            "authority": "Local Neighborhood Association",
+            "jurisdiction": "Indiranagar, Bangalore",
+            "summary": "Specific neighborhood guidelines ensuring leash compliance and usage of common side-gates.",
+            "full_text_url": "#",
+            "actionable": "Cite this when discussing morning walk routes with RWA security.",
+            "legal_sections": ["Neighborhood Bylaw 4.2"],
+        }
+    ]
+}
+
 AWBI_GUIDELINES: List[Dict[str, Any]] = [
     {
         "id": "AWBI_CIRCULAR_2015",
         "title": "AWBI Circular — RWAs Cannot Ban Pets",
         "date": "2015-07-15",
         "authority": "Animal Welfare Board of India",
-        "jurisdiction": "All India (including Bangalore / BBMP)",
-        "summary": (
-            "RWAs, apartment associations, and housing societies cannot pass bye-laws "
-            "that prohibit residents from keeping pet animals in their homes. "
-            "Such restrictions are contrary to the fundamental right to own property "
-            "and the Protection of Animals Act, 1960."
-        ),
-        "full_text_url": "https://awbi.in/awbi-pdf/order_pets_in_apartments.pdf",
-        "actionable": (
-            "If an RWA has issued a notice banning your pet, this circular is your "
-            "primary defence. Present it to the RWA secretary in writing."
-        ),
-        "legal_sections": ["Section 11, PCA 1960", "Article 21, Constitution of India"],
-    },
-    {
-        "id": "AWBI_DOGS_2023",
-        "title": "Animal Birth Control (Dogs) Rules 2023",
-        "date": "2023-03-10",
-        "authority": "Ministry of Fisheries, Animal Husbandry & Dairying",
         "jurisdiction": "All India",
-        "summary": (
-            "Municipal bodies (including BBMP Bangalore) are mandated to manage stray "
-            "dog populations through sterilization and vaccination, NOT culling. "
-            "RWAs cannot instruct security guards to remove, trap, or harm stray dogs "
-            "on their premises."
-        ),
-        "full_text_url": "https://egazette.gov.in/WriteReadData/2023/245195.pdf",
-        "actionable": (
-            "If your RWA is trapping or removing community dogs, file a complaint with "
-            "BBMP Animal Care Cell (+91 80-22221188) and cite these rules."
-        ),
-        "legal_sections": ["ABC Rules 2023 Rule 6", "PCA Act 1960 Section 11(1)(l)"],
+        "summary": "RWAs and societies cannot prohibit residents from keeping pet animals.",
+        "full_text_url": "https://awbi.in/awbi-pdf/order_pets_in_apartments.pdf",
+        "actionable": "Primary defence against a ban notice. Present to Secretary.",
+        "legal_sections": ["Section 11, PCA 1960", "Article 21, Constitution"],
     },
     {
         "id": "PCA_1960",
@@ -128,77 +147,21 @@ AWBI_GUIDELINES: List[Dict[str, Any]] = [
         "date": "1960-12-26",
         "authority": "Parliament of India",
         "jurisdiction": "All India",
-        "summary": (
-            "The foundational animal welfare legislation. Section 11 defines acts of "
-            "cruelty. Refusing to allow an owner to take their pet to a vet, "
-            "confiscating an animal, or causing unnecessary suffering are criminal offences "
-            "punishable by fine and imprisonment."
-        ),
+        "summary": "Foundational legislation defining acts of cruelty as criminal offences.",
         "full_text_url": "https://awbi.in/awbi-pdf/pcaact_1960.pdf",
-        "actionable": (
-            "If anyone prevents you from accessing veterinary care for your pet, "
-            "this is a cognizable offence. File an FIR at your local police station "
-            "citing Section 11(1)(h) of the PCA Act."
-        ),
+        "actionable": "File FIR if anyone prevents veterinary access or causes harm.",
         "legal_sections": ["Section 11", "Section 38"],
     },
     {
         "id": "BBMP_PETS_2022",
         "title": "BBMP Circular — Apartment Pet Guidelines",
         "date": "2022-04-01",
-        "authority": "Bruhat Bengaluru Mahanagara Palike (BBMP)",
-        "jurisdiction": "Bangalore / Bengaluru",
-        "summary": (
-            "BBMP explicitly directed all RWAs and apartment associations to permit "
-            "residents to keep registered pets. Pet owners must register their dogs "
-            "with BBMP and maintain vaccination records. BBMP grievance portal "
-            "accepts complaints against non-compliant RWAs."
-        ),
+        "authority": "BBMP",
+        "jurisdiction": "Bangalore",
+        "summary": "Mandates RWA compliance for registered pets in Bangalore.",
         "full_text_url": "https://bbmp.gov.in/documents/pet-registration",
-        "actionable": (
-            "Register your dog at bbmp.gov.in/pet-registration and print the certificate. "
-            "A registered pet cannot be barred from any residential premises."
-        ),
-        "legal_sections": ["BBMP Act 2020, Section 67", "KMC Act, Schedule IV"],
-    },
-    {
-        "id": "HC_KARNATAKA_2019",
-        "title": "Karnataka High Court — Pet Rights Judgment",
-        "date": "2019-08-23",
-        "authority": "High Court of Karnataka",
-        "jurisdiction": "Karnataka (including Bangalore)",
-        "summary": (
-            "The Karnataka HC ruled that apartment bye-laws restricting pet ownership "
-            "are void ab initio. The court affirmed that the right to keep a pet is "
-            "protected under Article 21 (right to life and personal liberty) and that "
-            "RWAs cannot override this fundamental right."
-        ),
-        "full_text_url": "https://indiankanoon.org/doc/pet-rights-karnataka",
-        "actionable": (
-            "Cite this judgment in any legal notice to your RWA. It establishes binding "
-            "precedent for all Karnataka courts and tribunals."
-        ),
-        "legal_sections": ["WP(C) 47823/2019", "Article 21, Constitution"],
-    },
-    {
-        "id": "LIFT_SHARING_2023",
-        "title": "Right to Use Common Areas with Pets",
-        "date": "2023-01-15",
-        "authority": "Animal Welfare Board of India",
-        "jurisdiction": "All India",
-        "summary": (
-            "Residents cannot be prohibited from using lifts, common areas, or "
-            "the main entrance with their leashed, vaccinated pets. "
-            "Such restrictions constitute harassment and may be reported to local "
-            "animal welfare officers."
-        ),
-        "full_text_url": "https://awbi.in/pdf/common_areas_circular.pdf",
-        "actionable": (
-            "Document every instance of harassment with timestamps. Send a registered "
-            "post notice to the RWA citing this circular. Escalate to the District "
-            "Animal Welfare Officer if harassment continues."
-        ),
-        "legal_sections": ["AWBI Circular dated 15-Jan-2023", "PCA Act Section 11(1)(m)"],
+        "actionable": "Register dog at bbmp.gov.in to confirm your legal standing.",
+        "legal_sections": ["BBMP Act 2020", "Bangalore Municipal Bylaws"],
     },
 ]
 

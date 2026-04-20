@@ -7,45 +7,28 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import date
 
-from data.legal_data import AWBI_GUIDELINES, LEGAL_NOTICE_TEMPLATE, BANGALORE_VET_EMERGENCY
-
-router = APIRouter(prefix="/legal-shield", tags=["legal"])
+from data.legal_data import REGIONAL_DATA, NEIGHBORHOOD_OVERRIDES, AWBI_GUIDELINES, LEGAL_NOTICE_TEMPLATE
 
 
-class LegalShieldResponse(BaseModel):
-    jurisdiction: str
-    total_guidelines: int
-    guidelines: list
-    summary: str
-    emergency_contact: dict
-
-
-class LegalNoticeRequest(BaseModel):
-    owner_name: str
-    owner_address: str
-    owner_contact: str
-    rwa_name: str
-    rwa_address: str
-    pin_code: str
-    pet_name: str
-    species: str
-    pet_age: str
-    bbmp_reg: str = "PENDING"
-
-
-class LegalNoticeResponse(BaseModel):
-    notice_text: str
-    guidelines_cited: List[str]
-    next_steps: List[str]
-
-
-@router.get("", response_model=LegalShieldResponse, summary="Get AWBI guidelines for Bangalore RWAs")
+@router.get("", response_model=LegalShieldResponse, summary="Get regionalized legal guidelines")
 async def get_legal_shield(
     category: Optional[str] = Query(None, description="Filter by: awbi | bbmp | court | pca"),
-    jurisdiction: str = Query("bangalore", description="Target jurisdiction"),
+    jurisdiction: str = Query("bangalore", description="Target city"),
+    neighborhood: Optional[str] = Query(None, description="Specific neighborhood for overrides"),
 ):
-    guidelines = AWBI_GUIDELINES
+    # 1. Base guidelines (All India)
+    guidelines = [g for g in AWBI_GUIDELINES]
+    
+    # 2. Add Regional/City summary and contacts
+    region = REGIONAL_DATA.get(jurisdiction.lower(), REGIONAL_DATA["generic_india"])
+    
+    # 3. Add Neighborhood Overrides
+    if neighborhood:
+        n_key = neighborhood.lower().replace(" ", "")
+        overrides = NEIGHBORHOOD_OVERRIDES.get(n_key, [])
+        guidelines = overrides + guidelines
 
+    # 4. Filter by category
     if category:
         cat_map = {
             "awbi": ["AWBI_"],
@@ -58,16 +41,11 @@ async def get_legal_shield(
             guidelines = [g for g in guidelines if any(g["id"].startswith(p) for p in prefixes)]
 
     return LegalShieldResponse(
-        jurisdiction="Bangalore / BBMP / Karnataka",
+        jurisdiction=region["jurisdiction"],
         total_guidelines=len(guidelines),
         guidelines=guidelines,
-        summary=(
-            "Under Indian law, RWAs cannot ban pet ownership. The AWBI circular (2015), "
-            "PCA Act 1960, BBMP circular (2022), and Karnataka HC judgment (2019) collectively "
-            "guarantee your right to keep a registered pet in any residential unit in Bangalore. "
-            "Violations are cognizable offences — contact BBMP Animal Care Cell immediately."
-        ),
-        emergency_contact=BANGALORE_VET_EMERGENCY,
+        summary=region["summary"],
+        emergency_contact=region["emergency_contact"],
     )
 
 

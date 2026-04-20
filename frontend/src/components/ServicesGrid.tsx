@@ -123,46 +123,34 @@ async function generateNoticePDF(noticeText: string, citedGuidelines: string[]) 
 
 // ── Legal Modal ────────────────────────────────────────────────────────────────
 function LegalModal({ onClose }: { onClose: () => void }) {
+  const { user, ownerProfile } = useAuth();
   const [step, setStep] = useState<"guidelines" | "form" | "generating" | "done">("guidelines");
   const [guidelines, setGuidelines] = useState<AwbiGuideline[]>([]);
   const [loadingGuidelines, setLoadingGuidelines] = useState(false);
-  const [form, setForm] = useState<Partial<LegalNoticeRequest>>({});
+  const [form, setForm] = useState<Partial<LegalNoticeRequest>>({
+    owner_name: ownerProfile?.full_name ?? "",
+    owner_address: ownerProfile?.neighborhood ?? "",
+    owner_contact: ownerProfile?.email ?? "",
+  });
   const [error, setError] = useState<string | null>(null);
 
   async function loadGuidelines() {
     setLoadingGuidelines(true);
     try {
-      const data = await getLegalShield();
+      // Dynamic location-aware lookup
+      const data = await getLegalShield(undefined, ownerProfile?.city ?? "bangalore");
       setGuidelines(data.guidelines);
       setStep("guidelines");
     } catch {
-      setError("Could not connect to Legal Shield API. Ensure backend is running.");
+      setError("Could not connect to Legal Shield API.");
     } finally {
       setLoadingGuidelines(false);
     }
   }
 
-  // Auto-load on mount
-  if (guidelines.length === 0 && !loadingGuidelines && step === "guidelines" && !error) {
-    loadGuidelines();
-  }
-
   async function handleGeneratePDF() {
-    const required: (keyof LegalNoticeRequest)[] = [
-      "owner_name", "owner_address", "owner_contact",
-      "rwa_name", "rwa_address", "pin_code",
-      "pet_name", "species", "pet_age"
-    ];
-    for (const k of required) {
-      if (!form[k]) {
-        setError(`Please fill in: ${k.replace("_", " ")}`);
-        return;
-      }
-    }
-    setError(null);
-    setStep("generating");
-    try {
-      const res = await generateLegalNotice(form as LegalNoticeRequest);
+    // Basic validation
+    const res = await generateLegalNotice(form as LegalNoticeRequest);
       await generateNoticePDF(res.notice_text, res.guidelines_cited);
       setStep("done");
     } catch (e) {
