@@ -31,7 +31,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
     setLoading(true);
     try {
       // 1. Create Owner Profile
-      const { data: owner, error: ownerErr } = await supabase
+      const response: any = await supabase
         .from("owners")
         .insert({
           auth_user_id: user.id,
@@ -40,14 +40,17 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
           city: city,
           neighborhood: neighborhood,
           kyc_verified: false
-        })
+        } as any)
         .select()
         .single();
+      
+      const owner = response.data;
+      const ownerErr = response.error;
 
       if (ownerErr) throw ownerErr;
 
       // 2. Create First Pet
-      const { error: petErr } = await supabase
+      const petResponse: any = await supabase
         .from("pets")
         .insert({
           owner_id: owner.id,
@@ -56,7 +59,9 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
           date_of_birth: dob,
           weight_kg: parseFloat(weight) || null,
           status: "active"
-        });
+        } as any);
+
+      const petErr = petResponse.error;
 
       if (petErr) throw petErr;
 

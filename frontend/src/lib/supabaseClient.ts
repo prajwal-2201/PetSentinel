@@ -12,10 +12,40 @@ export type Database = {
           email: string;
           phone: string | null;
           address: string | null;
+          city: string | null; // Added for SaaS locational features
+          neighborhood: string | null; // Added for SaaS locational features
           kyc_verified: boolean;
           kyc_verified_at: string | null;
           created_at: string;
           updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          auth_user_id?: string | null;
+          full_name: string;
+          email: string;
+          phone?: string | null;
+          address?: string | null;
+          city?: string | null;
+          neighborhood?: string | null;
+          kyc_verified?: boolean;
+          kyc_verified_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          auth_user_id?: string | null;
+          full_name?: string;
+          email?: string;
+          phone?: string | null;
+          address?: string | null;
+          city?: string | null;
+          neighborhood?: string | null;
+          kyc_verified?: boolean;
+          kyc_verified_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
         };
       };
       pets: {
@@ -31,6 +61,32 @@ export type Database = {
           status: "active" | "transferred" | "deceased";
           created_at: string;
           updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id: string;
+          name: string;
+          species: string;
+          breed?: string | null;
+          date_of_birth?: string | null;
+          weight_kg?: number | null;
+          microchip_id?: string | null;
+          status?: "active" | "transferred" | "deceased";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          owner_id?: string;
+          name?: string;
+          species?: string;
+          breed?: string | null;
+          date_of_birth?: string | null;
+          weight_kg?: number | null;
+          microchip_id?: string | null;
+          status?: "active" | "transferred" | "deceased";
+          created_at?: string;
+          updated_at?: string;
         };
       };
       health_records: {
@@ -49,6 +105,36 @@ export type Database = {
           created_at: string;
           updated_at: string;
         };
+        Insert: {
+          id?: string;
+          pet_id: string;
+          owner_id: string;
+          record_type: string;
+          title: string;
+          description?: string | null;
+          administered_by?: string | null;
+          administered_at: string;
+          next_due_at?: string | null;
+          document_url?: string | null;
+          metadata?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          pet_id?: string;
+          owner_id?: string;
+          record_type?: string;
+          title?: string;
+          description?: string | null;
+          administered_by?: string | null;
+          administered_at?: string;
+          next_due_at?: string | null;
+          document_url?: string | null;
+          metadata?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
       };
       ownership_transfers: {
         Row: {
@@ -63,6 +149,32 @@ export type Database = {
           transfer_hash: string | null;
           notes: string | null;
           created_at: string;
+        };
+        Insert: {
+          id?: string;
+          pet_id: string;
+          from_owner_id: string;
+          to_owner_id: string;
+          initiated_at?: string;
+          completed_at?: string | null;
+          status?: "pending" | "completed" | "rejected" | "cancelled";
+          records_transferred?: number;
+          transfer_hash?: string | null;
+          notes?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          pet_id?: string;
+          from_owner_id?: string;
+          to_owner_id?: string;
+          initiated_at?: string;
+          completed_at?: string | null;
+          status?: "pending" | "completed" | "rejected" | "cancelled";
+          records_transferred?: number;
+          transfer_hash?: string | null;
+          notes?: string | null;
+          created_at?: string;
         };
       };
     };
@@ -85,14 +197,25 @@ export type Database = {
         };
       };
     };
+    Views: {
+      [_ in never]: never
+    };
+    Enums: {
+      [_ in never]: never
+    };
+    CompositeTypes: {
+      [_ in never]: never
+    };
   };
 };
 
+import { SupabaseClient } from "@supabase/supabase-js";
+
 // ── Browser Client (for Client Components) ───────────────────────────────────
-export function createBrowserSupabaseClient() {
+export function createBrowserSupabaseClient(): SupabaseClient<Database> {
   return createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  ) as SupabaseClient<Database>;
 }
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { getLegalShield, generateLegalNotice, type AwbiGuideline, type LegalNoticeRequest } from "@/lib/triageApi";
+import { useAuth } from "@/lib/AuthContext";
 
 // ── Service definition ─────────────────────────────────────────────────────────
 const SERVICES = [
