@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { analyzeSymptoms, type TriageResponse } from "@/lib/triageApi";
+import { analyzeSymptoms, type TriageResponse, SeverityLevel } from "@/lib/triageApi";
 
 // ── Symptom suggestion chips ───────────────────────────────────────────────────
 const SYMPTOM_CHIPS = [
@@ -21,11 +21,11 @@ const SYMPTOM_CHIPS = [
 
 // ── Status dot config ──────────────────────────────────────────────────────────
 const STATUS_DOT: Record<string, { color: string; pulse: boolean; label: string }> = {
-  SAFE:                   { color: "bg-secondary",       pulse: false, label: "SAFE"     },
-  MONITOR:                { color: "bg-[#d46800]",       pulse: false, label: "MONITOR"  },
-  URGENT:                 { color: "bg-primary",         pulse: true,  label: "URGENT"   },
-  CRITICAL:               { color: "bg-error",           pulse: true,  label: "CRITICAL" },
-  MANDATORY_SAFETY_LOCK:  { color: "bg-error",           pulse: true,  label: "LOCK"     },
+  [SeverityLevel.SAFE]:                   { color: "bg-secondary",       pulse: false, label: "SAFE"     },
+  [SeverityLevel.MONITOR]:                { color: "bg-[#d46800]",       pulse: false, label: "MONITOR"  },
+  [SeverityLevel.URGENT]:                 { color: "bg-primary",         pulse: true,  label: "URGENT"   },
+  [SeverityLevel.CRITICAL]:               { color: "bg-error",           pulse: true,  label: "CRITICAL" },
+  [SeverityLevel.MANDATORY_SAFETY_LOCK]:  { color: "bg-error",           pulse: true,  label: "LOCK"     },
 };
 
 const RECENT_KEY = "petsentinel_recent";
@@ -173,7 +173,7 @@ export default function SmartTriageBar({ onResult, healthContext }: SmartTriageB
   }, [voiceOn]);
 
   // ── Derived ────────────────────────────────────────────────────────────────
-  const isCritical = preview === "CRITICAL" || preview === "MANDATORY_SAFETY_LOCK";
+  const isCritical = preview === SeverityLevel.CRITICAL || preview === SeverityLevel.MANDATORY_SAFETY_LOCK;
   const dotCfg = preview !== "idle" && preview !== "loading" ? STATUS_DOT[preview] : null;
 
   return (

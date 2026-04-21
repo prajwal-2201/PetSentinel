@@ -287,7 +287,7 @@ function LegalModal({ onClose }: { onClose: () => void }) {
 }
 
 // ── Main ServicesGrid ──────────────────────────────────────────────────────────
-export default function ServicesGrid() {
+export default function ServicesGrid({ onServiceAction }: { onServiceAction?: (action: string) => void }) {
   const [showLegal, setShowLegal] = useState(false);
 
   function handleServiceClick(action: string) {
@@ -297,8 +297,9 @@ export default function ServicesGrid() {
       window.open("tel:+918022221188", "_self");
     } else if (action === "bbmp") {
       window.open("https://bbmp.gov.in/pets", "_blank");
+    } else {
+      onServiceAction?.(action);
     }
-    // senior_risk, health_vault, triage handled by parent via mode switching
   }
 
   return (
@@ -315,16 +316,16 @@ export default function ServicesGrid() {
             <button 
               key={s.id}
               onClick={() => handleServiceClick(s.action)}
-              className="flex flex-col items-center p-6 bg-surface-container-low rounded-2xl border border-outline-variant/10 hover:bg-surface-container-high hover:scale-[1.03] active:scale-95 transition-all group"
+              className="flex flex-col items-center p-6 bg-surface-container-low rounded-2xl border border-outline-variant/10 hover:bg-surface-container-high hover:scale-[1.03] active:scale-95 transition-all group text-center"
             >
               <div className={`w-11 h-11 ${s.color} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
                 <span className={`material-symbols-outlined ${s.textColor} text-[22px]`} style={{ fontVariationSettings: "'FILL' 1" }}>
                   {s.icon}
                 </span>
               </div>
-              <p className="font-headline font-bold text-on-surface text-sm leading-tight">{svc.label}</p>
-              <p className="text-xs font-label text-on-surface-variant mt-0.5 mb-2">{svc.sublabel}</p>
-              <p className="text-xs font-body text-on-surface-variant leading-relaxed">{svc.description}</p>
+              <p className="font-headline font-bold text-on-surface text-sm leading-tight">{s.label}</p>
+              <p className="text-xs font-label text-on-surface-variant mt-0.5 mb-2 lowercase">{s.sublabel}</p>
+              <p className="text-xs font-body text-on-surface-variant leading-relaxed opacity-70 group-hover:opacity-100 transition-opacity">{s.description}</p>
             </button>
           ))}
         </div>

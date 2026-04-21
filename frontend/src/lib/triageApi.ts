@@ -41,17 +41,25 @@ async function get<T>(path: string, timeoutMs = 8000): Promise<T> {
 
 // ── /analyze-symptoms ────────────────────────────────────────────────────────
 
+export enum SeverityLevel {
+  SAFE = "SAFE",
+  MONITOR = "MONITOR",
+  URGENT = "URGENT",
+  CRITICAL = "CRITICAL",
+  MANDATORY_SAFETY_LOCK = "MANDATORY_SAFETY_LOCK",
+}
+
 export type SafetyInstruction = { code: string; message: string; priority: number };
 export type WorkerAnalysis = {
   symptoms_detected: string[];
   body_systems_affected: string[];
   risk_score: number;
-  ml_predicted_severity: "SAFE" | "MONITOR" | "URGENT" | "CRITICAL";
+  ml_predicted_severity: SeverityLevel;
   ml_confidence: number;
   recommended_actions: string[];
 };
 export type TriageResponse = {
-  status: "SAFE" | "MONITOR" | "URGENT" | "CRITICAL" | "MANDATORY_SAFETY_LOCK";
+  status: SeverityLevel;
   severity_label: string;
   triggered_by: "supervisor_rule" | "ml_model";
   triggered_keywords: string[];
