@@ -22,6 +22,7 @@ export type Pet = {
   name: string;
   species: string;
   breed: string | null;
+  date_of_birth: string;
   status: string;
   owner_id: string;
 };
