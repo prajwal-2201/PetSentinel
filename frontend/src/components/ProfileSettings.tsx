@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { createBrowserSupabaseClient } from "@/lib/supabaseClient";
+import { getMyPets, type Pet } from "@/lib/healthVault";
 
 interface ProfileSettingsProps {
   onClose: () => void;
@@ -13,6 +14,20 @@ export default function ProfileSettings({ onClose }: ProfileSettingsProps) {
   const [city, setCity] = useState(ownerProfile?.city || "Bangalore");
   const [neighborhood, setNeighborhood] = useState(ownerProfile?.neighborhood || "");
   const [saving, setSaving] = useState(false);
+  
+  const [pets, setPets] = useState<Pet[]>([]);
+  
+  useEffect(() => {
+    getMyPets().then(setPets);
+  }, []);
+
+  async function handleDeletePet(petId: string) {
+    if (!confirm("Are you sure you want to release this pet from your pack? This will delete their health vault permanently.")) return;
+    const supabase = createBrowserSupabaseClient();
+    await supabase.from("pets").delete().eq("id", petId);
+    setPets(prev => prev.filter(p => p.id !== petId));
+    window.location.reload(); // Refresh entire app state
+  }
 
   async function handleSave() {
     if (!ownerProfile) return;
@@ -38,8 +53,8 @@ export default function ProfileSettings({ onClose }: ProfileSettingsProps) {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 bg-on-surface/50 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-lg bg-surface rounded-3xl shadow-[0_32px_120px_rgba(0,0,0,0.4)] overflow-hidden animate-scale-in">
-        <header className="p-8 bg-surface-container-high flex items-center justify-between">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-surface rounded-3xl shadow-[0_32px_120px_rgba(0,0,0,0.4)] animate-scale-in">
+        <header className="p-8 bg-surface-container-high flex items-center justify-between sticky top-0 z-10">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/20">
               <img 
@@ -77,6 +92,34 @@ export default function ProfileSettings({ onClose }: ProfileSettingsProps) {
               className="w-full bg-surface-container-low border-b-2 border-outline-variant/30 focus:border-primary px-4 py-3 rounded-t-lg focus:outline-none transition-colors font-body"
               placeholder="e.g. Indiranagar"
             />
+          </div>
+          
+          <div className="pt-4 border-t border-outline-variant/10">
+            <h3 className="font-headline font-bold text-on-surface mb-3 flex items-center gap-2">
+              <span className="material-symbols-outlined text-secondary-dim">pets</span>
+              Manage Pack
+            </h3>
+            {pets.length === 0 ? (
+               <p className="text-xs text-on-surface-variant font-body mb-2">No active wards in your pack.</p>
+            ) : (
+               <div className="space-y-2 mb-4">
+                 {pets.map(p => (
+                   <div key={p.id} className="flex items-center justify-between bg-error-container/10 border border-error/10 p-3 rounded-lg">
+                     <div>
+                       <p className="text-sm font-bold text-on-surface">{p.name}</p>
+                       <p className="text-[10px] uppercase text-on-surface-variant">{p.species}</p>
+                     </div>
+                     <button 
+                       onClick={() => handleDeletePet(p.id)}
+                       className="text-xs font-label text-error hover:bg-error/10 px-3 py-1.5 rounded-md transition-colors"
+                     >
+                       Release
+                     </button>
+                   </div>
+                 ))}
+               </div>
+            )}
+            <p className="text-[10px] text-on-surface-variant leading-tight">Releasing a pet destroys their sovereign health vault for privacy. Proceed with caution.</p>
           </div>
 
           <div className="pt-4 flex flex-col gap-3">

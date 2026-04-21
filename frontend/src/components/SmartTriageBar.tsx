@@ -38,9 +38,10 @@ type PreviewState = "idle" | "loading" | keyof typeof STATUS_DOT;
 interface SmartTriageBarProps {
   onResult: (r: TriageResponse) => void;
   healthContext?: string;
+  focusTrigger?: number;
 }
 
-export default function SmartTriageBar({ onResult, healthContext }: SmartTriageBarProps) {
+export default function SmartTriageBar({ onResult, healthContext, focusTrigger }: SmartTriageBarProps) {
   const [input, setInput]             = useState("");
   const [expanded, setExpanded]       = useState(false);
   const [submitting, setSubmitting]   = useState(false);
@@ -61,6 +62,14 @@ export default function SmartTriageBar({ onResult, healthContext }: SmartTriageB
       if (stored) setRecent(JSON.parse(stored));
     } catch { /* ignore */ }
   }, []);
+
+  // ── Imperative Focus Handle ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (focusTrigger) {
+      inputRef.current?.focus();
+      setExpanded(true);
+    }
+  }, [focusTrigger]);
 
   // ── Keyboard shortcut Ctrl+K / Cmd+K ────────────────────────────────────────
   useEffect(() => {

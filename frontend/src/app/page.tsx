@@ -8,7 +8,7 @@ import { analyzeSymptoms, assessSeniorRisk, type TriageResponse, type SeniorRisk
 import AuthScreen from "@/components/AuthScreen";
 import OnboardingWizard from "@/components/OnboardingWizard";
 import PetTransition from "@/components/PetTransition";
-import EmergencyTriage from "@/components/EmergencyTriage";
+import CareView from "@/components/CareView";
 import SilverPawsMode from "@/components/SilverPawsMode";
 import ActivenessMode from "@/components/ActivenessMode";
 import ServicesGrid from "@/components/ServicesGrid";
@@ -38,6 +38,7 @@ export default function Home() {
   const [petsLoading, setPetsLoading] = useState(true);
   const [showPetPicker, setShowPetPicker] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [triageFocusTrigger, setTriageFocusTrigger] = useState(0);
 
   const [triageResult, setTriageResult] = useState<TriageResponse | null>(null);
   const [silverPawsData, setSilverPawsData] = useState<SeniorRiskResponse | null>(null);
@@ -101,7 +102,7 @@ export default function Home() {
   const handleServiceAction = (action: string) => {
     if (action === "health_vault") setMode("health_vault");
     if (action === "triage") {
-      // Focus triage bar is handled by Ctrl+K hint, but we could set an effect
+      setTriageFocusTrigger(Date.now());
     }
     if (action === "senior_risk") triggerSecondaryNav();
   };
@@ -197,11 +198,11 @@ export default function Home() {
         <main className="flex-1 w-full max-w-4xl mx-auto">
           {mode === "guardian" && (
             <div className="p-6 space-y-8">
-              <PetTransition />
+              <PetTransition ownerProfile={ownerProfile} />
               <ServicesGrid onServiceAction={handleServiceAction} />
             </div>
           )}
-          {mode === "care" && <EmergencyTriage />}
+          {mode === "care" && <CareView />}
           {mode === "secondary_nav" && (
             <div className="p-6">
               {isSenior ? (
@@ -222,6 +223,7 @@ export default function Home() {
         <SmartTriageBar 
           onResult={(r) => setTriageResult(r)} 
           healthContext={healthContextSummary}
+          focusTrigger={triageFocusTrigger}
         />
 
         {/* Navigation Bar */}

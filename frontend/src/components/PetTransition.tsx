@@ -1,4 +1,7 @@
-export default function PetTransition() {
+export default function PetTransition({ ownerProfile }: { ownerProfile?: any }) {
+  const city = ownerProfile?.city || "Bangalore";
+  const neighborhood = ownerProfile?.neighborhood || "Indiranagar";
+  
   return (
     <div className="bg-surface text-on-surface min-h-screen pb-24 md:pb-0 font-body">
       <header className="w-full top-0 sticky flex justify-between items-center px-6 h-16 z-40 bg-surface-container-low border-b border-outline-variant/20">
@@ -24,7 +27,7 @@ export default function PetTransition() {
           <div className="flex flex-col md:flex-row gap-4 mb-8">
             <div className="flex-1 relative">
               <span className="material-symbols-outlined absolute left-4 top-3.5 text-on-surface-variant">search</span>
-              <input className="w-full bg-surface-container-lowest border-b border-outline-variant/15 focus:border-secondary text-on-surface py-3 pl-12 pr-4 rounded-t-sm focus:outline-none focus:ring-0 transition-colors font-body" placeholder="Search verified registries..." type="text" />
+              <input className="w-full bg-surface-container-lowest border-b border-outline-variant/15 focus:border-secondary text-on-surface py-3 pl-12 pr-4 rounded-t-sm focus:outline-none focus:ring-0 transition-colors font-body" placeholder={`Search verified registries in ${neighborhood}, ${city}...`} type="text" />
             </div>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -58,7 +61,7 @@ export default function PetTransition() {
                   <p className="text-sm text-on-surface-variant font-body">Registered: Oct 2023</p>
                   <div className="flex items-center gap-1 mt-1 text-secondary text-sm">
                     <span className="material-symbols-outlined text-[16px]">location_on</span>
-                    <span>Portland, OR</span>
+                    <span>{neighborhood}, {city}</span>
                   </div>
                 </div>
               </div>
@@ -90,7 +93,7 @@ export default function PetTransition() {
                   <p className="text-sm text-on-surface-variant font-body">Registered: Jan 2024</p>
                   <div className="flex items-center gap-1 mt-1 text-secondary text-sm">
                     <span className="material-symbols-outlined text-[16px]">location_on</span>
-                    <span>Seattle, WA</span>
+                    <span>{city} (Neighboring District)</span>
                   </div>
                 </div>
               </div>

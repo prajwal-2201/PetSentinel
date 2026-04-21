@@ -22,6 +22,10 @@ async function post<T>(path: string, body: unknown, timeoutMs = 8000): Promise<T
       throw new Error(err.detail ?? `HTTP ${res.status}`);
     }
     return res.json() as Promise<T>;
+  } catch (err: any) {
+    if (err.name === "AbortError") throw new Error("Request timed out. Server might be down or busy.");
+    if (err.message === "Failed to fetch") throw new Error("Failed to connect to triage server. Ensure backend is running and CORS allows the request.");
+    throw err;
   } finally {
     clearTimeout(timer);
   }
@@ -34,6 +38,10 @@ async function get<T>(path: string, timeoutMs = 8000): Promise<T> {
     const res = await fetch(`${BASE_URL}${path}`, { signal: controller.signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json() as Promise<T>;
+  } catch (err: any) {
+    if (err.name === "AbortError") throw new Error("Request timed out. Server might be down or busy.");
+    if (err.message === "Failed to fetch") throw new Error("Failed to connect to server. Ensure backend is running and CORS allows the request.");
+    throw err;
   } finally {
     clearTimeout(timer);
   }

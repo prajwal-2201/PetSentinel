@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 interface ActivenessModeProps {
   petName: string;
   petSpecies: string;
@@ -7,6 +9,23 @@ interface ActivenessModeProps {
 
 export default function ActivenessMode({ petName, petSpecies }: ActivenessModeProps) {
   const isDog = petSpecies.toLowerCase() === "dog";
+
+  // Live simulation states
+  const [steps, setSteps] = useState(2400);
+  const [kcal, setKcal] = useState(128);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Randomly simulate real-time activity
+      if (Math.random() > 0.3) {
+        setSteps(s => s + Math.floor(Math.random() * 5) + 1);
+        if (Math.random() > 0.7) {
+          setKcal(k => k + 1);
+        }
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="bg-surface-container-lowest min-h-[500px] rounded-3xl p-8 shadow-[0_24px_80px_rgba(0,0,0,0.05)] border border-outline-variant/10 animate-mode-enter">
@@ -63,11 +82,11 @@ export default function ActivenessMode({ petName, petSpecies }: ActivenessModePr
           
           <div className="flex justify-around text-center border-t border-white/10 pt-4">
             <div>
-              <p className="text-lg font-bold">2.4k</p>
+              <p className="text-lg font-bold">{steps.toLocaleString()}</p>
               <p className="text-[10px] opacity-70">Steps</p>
             </div>
             <div>
-              <p className="text-lg font-bold">128</p>
+              <p className="text-lg font-bold">{kcal}</p>
               <p className="text-[10px] opacity-70">Kcal</p>
             </div>
             <div>
