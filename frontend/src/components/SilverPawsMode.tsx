@@ -3,7 +3,7 @@
 import type { SeniorRiskResponse, SilverPawsRecommendation } from "@/lib/triageApi";
 
 interface SilverPawsModeProps {
-  data: SeniorRiskResponse;
+  data?: SeniorRiskResponse;
   onDismiss?: () => void;
 }
 
@@ -81,6 +81,18 @@ function RiskGauge({ score }: { score: number }) {
 }
 
 export default function SilverPawsMode({ data, onDismiss }: SilverPawsModeProps) {
+  if (!data) {
+    return (
+      <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-12 text-center gap-6">
+        <div className="w-14 h-14 border-4 border-secondary-container border-t-secondary rounded-full animate-spin" />
+        <div className="space-y-1">
+          <p className="font-headline font-bold text-on-surface">Initializing Silver Paws Monitor</p>
+          <p className="text-sm font-body text-on-surface-variant">Calibrating geriatric risk factors...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-surface font-body pb-32">
       {/* Header */}
