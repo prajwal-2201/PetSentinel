@@ -74,6 +74,7 @@ class WorkerAgent:
         pet_species: Optional[str] = None,
         pet_age_years: Optional[float] = None,
         pet_weight_kg: Optional[float] = None,
+        health_context: Optional[str] = None,
     ) -> WorkerAnalysis:
         # ── ML Prediction ─────────────────────────────────────────────────────
         ml_label, confidence, prob_map = predict(text)
@@ -85,19 +86,35 @@ class WorkerAgent:
             prob * severity_weights.get(cls, 0.5)
             for cls, prob in prob_map.items()
         )
-        # Age/weight modifiers
+        
+        # ── Contextual modifiers ─────────────────────────────────────────────
         if pet_age_years is not None and pet_age_years >= 8:
             risk_score = min(1.0, risk_score + 0.08)  # Senior pet penalty
         if pet_weight_kg is not None and pet_weight_kg < 3:
             risk_score = min(1.0, risk_score + 0.05)  # Small animal penalty
+            
+        # Analysis of health context (simulated NLP)
+        history_tags = []
+        if health_context:
+            hc_lower = health_context.lower()
+            if "asthma" in hc_lower and "cough" in text.lower():
+                risk_score = min(1.0, risk_score + 0.15)
+                history_tags.append("Asthmatic History")
+            if "allergy" in hc_lower or "allergic" in hc_lower:
+                history_tags.append("Known Allergies")
+            if "surgery" in hc_lower and "limp" in text.lower():
+                risk_score = min(1.0, risk_score + 0.1)
+                history_tags.append("Post-Surgical Site")
 
         # ── Symptom detection ─────────────────────────────────────────────────
         text_lower = text.lower()
         detected_symptoms = self._extract_symptoms(text_lower)
         affected_systems = self._detect_body_systems(text_lower)
+        if history_tags:
+            affected_systems.extend(history_tags)
 
         # ── Recommended actions ───────────────────────────────────────────────
-        actions = self._get_recommendations(severity, pet_species, pet_age_years)
+        actions = self._get_recommendations(severity, pet_species, pet_age_years, health_context)
 
         return WorkerAnalysis(
             symptoms_detected=detected_symptoms,
@@ -129,6 +146,7 @@ class WorkerAgent:
         severity: SeverityLevel,
         species: Optional[str],
         age: Optional[float],
+        health_context: Optional[str] = None
     ) -> List[str]:
         base = {
             SeverityLevel.SAFE: [
@@ -159,9 +177,19 @@ class WorkerAgent:
             ],
         }
         actions = list(base.get(severity, base[SeverityLevel.MONITOR]))
+        
+        # Cross-reference with health context
+        if health_context:
+            hc_lower = health_context.lower()
+            if "asthma" in hc_lower:
+                actions.append("⚠️ MEDICAL ALERT: Pet has history of asthma. Prioritize respiratory stability.")
+            if "diabetic" in hc_lower or "diabetes" in hc_lower:
+                actions.append("⚠️ MEDICAL ALERT: Pet is diabetic. Check blood glucose and mention this to the vet.")
+        
         # Species-specific additions
         if species and species.lower() == "rabbit" and severity in [SeverityLevel.URGENT, SeverityLevel.CRITICAL]:
             actions.append("Rabbits deteriorate extremely fast — GI stasis is life-threatening within 24 hours.")
         if age is not None and age >= 8:
             actions.append(f"Senior pet ({age:.0f}y): reduced physiological reserve — escalate urgency accordingly.")
+            
         return actions

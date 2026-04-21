@@ -16,6 +16,7 @@ class SymptomInput(BaseModel):
     pet_species: Optional[str] = Field(None, description="Species e.g. dog, cat, rabbit")
     pet_age_years: Optional[float] = Field(None, description="Pet age in years")
     pet_weight_kg: Optional[float] = Field(None, description="Pet weight in kg")
+    health_context: Optional[str] = Field(None, description="Summary of pet medical history/records")
 
 
 class SafetyInstruction(BaseModel):

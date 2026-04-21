@@ -64,7 +64,12 @@ export type TriageResponse = {
 
 export async function analyzeSymptoms(
   input: string,
-  options?: { pet_species?: string; pet_age_years?: number; pet_weight_kg?: number }
+  options?: { 
+    pet_species?: string; 
+    pet_age_years?: number; 
+    pet_weight_kg?: number;
+    health_context?: string;
+  }
 ): Promise<TriageResponse> {
   return post<TriageResponse>("/analyze-symptoms", { input, ...options });
 }

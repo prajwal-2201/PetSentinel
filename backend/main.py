@@ -109,6 +109,7 @@ async def analyze_symptoms(payload: SymptomInput) -> TriageResponse:
             pet_species=payload.pet_species,
             pet_age_years=payload.pet_age_years,
             pet_weight_kg=payload.pet_weight_kg,
+            health_context=payload.health_context
         )
         logger.info(
             f"[{result.session_id}] '{payload.input[:60]}...' "

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useAuth } from "@/lib/AuthContext";
-import { getMyPets, type Pet } from "@/lib/healthVault";
+import { getMyPets, getPetHealthVault, type Pet, type HealthRecord } from "@/lib/healthVault";
 import { analyzeSymptoms, assessSeniorRisk, type TriageResponse, type SeniorRiskResponse } from "@/lib/triageApi";
 
 import AuthScreen from "@/components/AuthScreen";
@@ -10,9 +10,24 @@ import OnboardingWizard from "@/components/OnboardingWizard";
 import PetTransition from "@/components/PetTransition";
 import EmergencyTriage from "@/components/EmergencyTriage";
 import SilverPawsMode from "@/components/SilverPawsMode";
+import ActivenessMode from "@/components/ActivenessMode";
 import ServicesGrid from "@/components/ServicesGrid";
+import SmartTriageBar from "@/components/SmartTriageBar";
+import TriageResultPanel from "@/components/TriageResultPanel";
+import HealthVaultView from "@/components/HealthVaultView";
+import ProfileSettings from "@/components/ProfileSettings";
 
-type AppMode = "guardian" | "care" | "silver_paws";
+type AppMode = "guardian" | "care" | "secondary_nav" | "health_vault";
+
+function calculateAge(dob: string) {
+  const birth = new Date(dob);
+  const now = new Date();
+  let years = now.getFullYear() - birth.getFullYear();
+  if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) {
+    years--;
+  }
+  return Math.max(0, years);
+}
 
 export default function Home() {
   const { user, ownerProfile, loading: authLoading, refreshProfile } = useAuth();
@@ -21,12 +36,12 @@ export default function Home() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [activePet, setActivePet] = useState<Pet | null>(null);
   const [petsLoading, setPetsLoading] = useState(true);
+  const [showPetPicker, setShowPetPicker] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
-  const [criticalTriage, setCriticalTriage] = useState<TriageResponse | null>(null);
+  const [triageResult, setTriageResult] = useState<TriageResponse | null>(null);
   const [silverPawsData, setSilverPawsData] = useState<SeniorRiskResponse | null>(null);
-
-  const [triageInput, setTriageInput] = useState("");
-  const [triageLoading, setTriageLoading] = useState(false);
+  const [healthRecords, setHealthRecords] = useState<HealthRecord[]>([]);
 
   // 1. Initial Data Fetch
   useEffect(() => {
@@ -35,58 +50,61 @@ export default function Home() {
         setPetsLoading(true);
         const myPets = await getMyPets();
         setPets(myPets);
-        if (myPets.length > 0) setActivePet(myPets[0]);
+        if (myPets.length > 0 && !activePet) setActivePet(myPets[0]);
         setPetsLoading(false);
       }
     }
     loadData();
   }, [user, ownerProfile]);
 
-  // 2. Triage Handler
-  const handleTriage = useCallback(async () => {
-    if (!triageInput.trim() || !activePet) return;
-    setTriageLoading(true);
-    try {
-      const res = await analyzeSymptoms(triageInput, {
-        pet_species: activePet.species,
-        // Since we don't store age directly in Pet type yet in healthVault.ts, we use a placeholder or extension
-        // pet_age_years: calculateAge(activePet.date_of_birth) 
-      });
-      
-      if (res.ui_override || res.status === "CRITICAL" || res.status === "MANDATORY_SAFETY_LOCK") {
-        setCriticalTriage(res);
-      }
-      setTriageInput("");
-    } catch (e) {
-      console.error("Triage failed", e);
-    } finally {
-      setTriageLoading(false);
-    }
-  }, [triageInput, activePet]);
-
-  // 3. Senior Risk Handler (Silver Paws)
-  const triggerSilverPaws = useCallback(async () => {
-    if (!activePet) return;
-    try {
-      // Real SaaS risk assessment based on active pet
-      const result = await assessSeniorRisk({
-        pet_name: activePet.name,
-        species: activePet.species,
-        age_years: 15, // Placeholder for actual calculation
-        weight_kg: 25, // Placeholder
-        mobility_score: 5,
-        recent_symptoms: "Stiff movement in morning",
-      });
-      
-      if (result.silver_paws_mode) {
-        setSilverPawsData(result);
-        setMode("silver_paws");
-      }
-    } catch {
-      // Fallback/Demo if backend logic isn't fully ready for the dynamic pet
-      setMode("silver_paws");
+  // 2. Fetch Health Context for Triage
+  useEffect(() => {
+    if (activePet) {
+      getPetHealthVault(activePet.id).then(setHealthRecords);
     }
   }, [activePet]);
+
+  const healthContextSummary = useMemo(() => {
+    if (healthRecords.length === 0) return "";
+    return healthRecords.map(r => `${r.title} (${r.record_type}) on ${r.administered_at}`).join("; ");
+  }, [healthRecords]);
+
+  const petAge = useMemo(() => activePet ? calculateAge(activePet.date_of_birth) : 0, [activePet]);
+  const isSenior = useMemo(() => {
+    if (!activePet) return false;
+    const species = activePet.species.toLowerCase();
+    return species === "dog" ? petAge >= 7 : petAge >= 10;
+  }, [activePet, petAge]);
+
+  // 3. Senior Risk Handler (Silver Paws)
+  const triggerSecondaryNav = useCallback(async () => {
+    if (!activePet) return;
+    if (isSenior) {
+      try {
+        const result = await assessSeniorRisk({
+          pet_name: activePet.name,
+          species: activePet.species,
+          age_years: petAge,
+          weight_kg: 20, // Default 
+          mobility_score: 5,
+        });
+        setSilverPawsData(result);
+        setMode("secondary_nav");
+      } catch {
+        setMode("secondary_nav");
+      }
+    } else {
+      setMode("secondary_nav");
+    }
+  }, [activePet, isSenior, petAge]);
+
+  const handleServiceAction = (action: string) => {
+    if (action === "health_vault") setMode("health_vault");
+    if (action === "triage") {
+      // Focus triage bar is handled by Ctrl+K hint, but we could set an effect
+    }
+    if (action === "senior_risk") triggerSecondaryNav();
+  };
 
   // ── Auth & Onboarding Guard ──────────────────────────────────────────────────
   if (authLoading) return (
@@ -96,110 +114,140 @@ export default function Home() {
   );
 
   if (!user) return <AuthScreen onSuccess={refreshProfile} />;
-  
   if (user && !ownerProfile) return <OnboardingWizard onComplete={refreshProfile} />;
 
   // ── Main Dashboard ───────────────────────────────────────────────────────────
   return (
     <>
-      {/* Critical Override */}
-      {criticalTriage && (
-        <div className="fixed inset-0 z-[100] bg-error/10 backdrop-blur-sm flex items-center justify-center p-6">
-           {/* CriticalBanner component logic included here or imported */}
-           <div className="bg-error-container text-on-error-container p-8 rounded-3xl max-w-lg w-full space-y-4">
-              <h1 className="text-3xl font-black uppercase">{criticalTriage.status}</h1>
-              <p>{criticalTriage.severity_label}</p>
-              <button 
-                onClick={() => setCriticalTriage(null)}
-                className="w-full py-4 bg-on-error-container text-error-container rounded-xl font-bold"
-              >DISMISS EMERGENCY OVERRIDE</button>
-           </div>
-        </div>
+      {/* Triage Result Panel */}
+      {triageResult && (
+        <TriageResultPanel 
+          result={triageResult} 
+          onClose={() => setTriageResult(null)} 
+        />
       )}
 
-      <div className="min-h-screen bg-surface flex flex-col font-body relative pb-24">
+      {/* Settings Modal */}
+      {showSettings && (
+        <ProfileSettings onClose={() => setShowSettings(false)} />
+      )}
+
+      <div className="min-h-screen bg-surface flex flex-col font-body relative pb-32">
         {/* Header: Pet Selector */}
         <header className="px-6 py-4 flex items-center justify-between border-b border-outline-variant/10 bg-surface/80 backdrop-blur-md sticky top-0 z-40">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-secondary-container rounded-full flex items-center justify-center font-bold text-secondary-dim">
+          <button 
+            onClick={() => setShowPetPicker(!showPetPicker)}
+            className="flex items-center gap-3 group text-left"
+          >
+            <div className="w-10 h-10 bg-secondary-container rounded-full flex items-center justify-center font-bold text-secondary-dim shadow-sm group-hover:scale-105 transition-transform">
               {activePet?.name[0]}
             </div>
             <div>
-              <h2 className="text-sm font-headline font-black uppercase tracking-tight leading-none">
+              <h2 className="text-sm font-headline font-black uppercase tracking-tight leading-none flex items-center gap-1.5">
                 {activePet?.name ?? "No Pet Selected"}
+                <span className="material-symbols-outlined text-[16px] text-on-surface-variant group-hover:rotate-180 transition-transform">expand_more</span>
               </h2>
               <p className="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-1">
-                {activePet?.species} · {ownerProfile?.neighborhood ?? "Scanning Location..."}
+                {activePet?.breed || activePet?.species} · {ownerProfile?.neighborhood ?? "Scanning..."}
               </p>
             </div>
-          </div>
+          </button>
           
-          <div className="flex items-center gap-2">
-             <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">notifications</button>
-             <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">settings</button>
+          <div className="flex items-center gap-1">
+             <button className="w-10 h-10 flex items-center justify-center material-symbols-outlined text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">notifications</button>
+             <button 
+              onClick={() => setShowSettings(true)}
+              className="w-10 h-10 flex items-center justify-center material-symbols-outlined text-on-surface-variant hover:bg-surface-container rounded-full transition-colors"
+             >settings</button>
           </div>
+
+          {/* Pet Picker Dropdown */}
+          {showPetPicker && (
+            <div className="absolute left-6 top-16 w-64 bg-surface-container-highest border border-outline-variant/20 rounded-2xl shadow-xl p-2 animate-scale-in z-50">
+              <p className="text-[10px] font-label text-on-surface-variant px-3 py-2 uppercase tracking-widest">My Pack</p>
+              {pets.map(p => (
+                <button 
+                  key={p.id}
+                  onClick={() => { setActivePet(p); setShowPetPicker(false); setMode("guardian"); }}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl hover:bg-surface-container transition-colors ${activePet?.id === p.id ? 'bg-secondary-container/30 border border-secondary/10' : ''}`}
+                >
+                  <div className="w-8 h-8 rounded-full bg-secondary-dim/10 flex items-center justify-center text-xs font-bold text-secondary-dim">
+                    {p.name[0]}
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-on-surface">{p.name}</p>
+                    <p className="text-[9px] text-on-surface-variant uppercase">{p.species}</p>
+                  </div>
+                </button>
+              ))}
+              <div className="border-t border-outline-variant/10 mt-2 pt-2">
+                <button 
+                  onClick={() => window.location.reload()} // Easy way to re-onboard/add
+                  className="w-full flex items-center gap-3 p-2 rounded-xl text-primary hover:bg-primary/5 transition-colors text-xs font-label"
+                >
+                  <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                  Register New Pet
+                </button>
+              </div>
+            </div>
+          )}
         </header>
 
         {/* Main Content View */}
-        <main className="flex-1 w-full">
+        <main className="flex-1 w-full max-w-4xl mx-auto">
           {mode === "guardian" && (
-            <div className="p-6 space-y-6">
-              {/* Pet Identity Header */}
+            <div className="p-6 space-y-8">
               <PetTransition />
-              
-              {/* Regional Services Grid (Dynamic location aware) */}
-              <ServicesGrid />
+              <ServicesGrid onServiceAction={handleServiceAction} />
             </div>
           )}
           {mode === "care" && <EmergencyTriage />}
-          {mode === "silver_paws" && silverPawsData && (
-            <SilverPawsMode data={silverPawsData} onDismiss={() => setMode("guardian")} />
+          {mode === "secondary_nav" && (
+            <div className="p-6">
+              {isSenior ? (
+                <SilverPawsMode data={silverPawsData || undefined} onDismiss={() => setMode("guardian")} />
+              ) : (
+                <ActivenessMode petName={activePet?.name || "Pet"} petSpecies={activePet?.species || "Dog"} />
+              )}
+            </div>
+          )}
+          {mode === "health_vault" && activePet && ownerProfile && (
+            <div className="p-6">
+              <HealthVaultView petId={activePet.id} petName={activePet.name} ownerId={ownerProfile.id} />
+            </div>
           )}
         </main>
 
         {/* Floating Triage Bar */}
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-xl px-4 z-40">
-          <div className="bg-surface-container-lowest/90 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-outline-variant/20 flex items-center gap-2 px-4 py-2">
-            <span className="material-symbols-outlined text-on-surface-variant text-[20px]">search</span>
-            <input
-              value={triageInput}
-              onChange={(e) => setTriageInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleTriage()}
-              placeholder={`Ask about ${activePet?.name}...`}
-              className="flex-1 bg-transparent text-on-surface font-body text-sm py-2 focus:outline-none"
-            />
-            <button
-              onClick={handleTriage}
-              disabled={triageLoading || !triageInput.trim()}
-              className="bg-tertiary-dim text-on-tertiary px-4 py-2 rounded-xl font-label text-sm disabled:opacity-40"
-            >
-              Triage
-            </button>
-          </div>
-        </div>
+        <SmartTriageBar 
+          onResult={(r) => setTriageResult(r)} 
+          healthContext={healthContextSummary}
+        />
 
         {/* Navigation Bar */}
-        <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-surface-container-highest px-2 py-2 rounded-full shadow-2xl border border-outline-variant/20 z-50 flex gap-1">
+        <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-surface-container-highest/95 backdrop-blur-md px-2 py-2 rounded-full shadow-2xl border border-outline-variant/20 z-50 flex gap-1">
           <button
             onClick={() => setMode("guardian")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all font-label text-xs uppercase ${mode === "guardian" ? "bg-secondary-container text-secondary-dim" : "text-on-surface"}`}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all font-label text-[11px] uppercase tracking-wider ${mode === "guardian" ? "bg-secondary-container text-secondary-dim shadow-sm" : "text-on-surface-variant hover:text-on-surface"}`}
           >
-            <span className="material-symbols-outlined text-[18px]">shield_person</span>
+            <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: mode === "guardian" ? "'FILL' 1" : "" }}>home</span>
             Guardian
           </button>
           <button
             onClick={() => setMode("care")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all font-label text-xs uppercase ${mode === "care" ? "bg-tertiary-container text-tertiary-dim" : "text-on-surface"}`}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all font-label text-[11px] uppercase tracking-wider ${mode === "care" ? "bg-tertiary-container text-tertiary-dim shadow-sm" : "text-on-surface-variant hover:text-on-surface"}`}
           >
-            <span className="material-symbols-outlined text-[18px]">medical_services</span>
+            <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: mode === "care" ? "'FILL' 1" : "" }}>medical_services</span>
             Care
           </button>
           <button
-            onClick={triggerSilverPaws}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all font-label text-xs uppercase ${mode === "silver_paws" ? "bg-primary-container/30 text-primary" : "text-on-surface"}`}
+            onClick={triggerSecondaryNav}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all font-label text-[11px] uppercase tracking-wider ${mode === "secondary_nav" ? "bg-primary-container/40 text-primary shadow-sm" : "text-on-surface-variant hover:text-on-surface"}`}
           >
-            <span className="material-symbols-outlined text-[18px]">elderly</span>
-            Palliative
+            <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: mode === "secondary_nav" ? "'FILL' 1" : "" }}>
+              {isSenior ? "elderly" : "directions_run"}
+            </span>
+            {isSenior ? "Palliative" : "Activeness"}
           </button>
         </nav>
       </div>

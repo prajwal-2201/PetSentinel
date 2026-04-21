@@ -311,16 +311,15 @@ export default function ServicesGrid() {
           Services
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {SERVICES.map((svc) => (
-            <button
-              key={svc.id}
-              id={`service-${svc.id}`}
-              onClick={() => handleServiceClick(svc.action)}
-              className="text-left bg-surface-container-lowest p-5 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-outline-variant/10 hover:shadow-[0_8px_30px_rgba(0,0,0,0.1)] hover:-translate-y-0.5 active:scale-95 transition-all group"
+          {SERVICES.map((s) => (
+            <button 
+              key={s.id}
+              onClick={() => handleServiceClick(s.action)}
+              className="flex flex-col items-center p-6 bg-surface-container-low rounded-2xl border border-outline-variant/10 hover:bg-surface-container-high hover:scale-[1.03] active:scale-95 transition-all group"
             >
-              <div className={`w-11 h-11 ${svc.color} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                <span className={`material-symbols-outlined ${svc.textColor} text-[22px]`} style={{ fontVariationSettings: "'FILL' 1" }}>
-                  {svc.icon}
+              <div className={`w-11 h-11 ${s.color} rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                <span className={`material-symbols-outlined ${s.textColor} text-[22px]`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                  {s.icon}
                 </span>
               </div>
               <p className="font-headline font-bold text-on-surface text-sm leading-tight">{svc.label}</p>

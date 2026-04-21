@@ -37,9 +37,10 @@ type PreviewState = "idle" | "loading" | keyof typeof STATUS_DOT;
 
 interface SmartTriageBarProps {
   onResult: (r: TriageResponse) => void;
+  healthContext?: string;
 }
 
-export default function SmartTriageBar({ onResult }: SmartTriageBarProps) {
+export default function SmartTriageBar({ onResult, healthContext }: SmartTriageBarProps) {
   const [input, setInput]             = useState("");
   const [expanded, setExpanded]       = useState(false);
   const [submitting, setSubmitting]   = useState(false);
@@ -51,7 +52,7 @@ export default function SmartTriageBar({ onResult }: SmartTriageBarProps) {
   const inputRef      = useRef<HTMLInputElement>(null);
   const containerRef  = useRef<HTMLDivElement>(null);
   const debounceRef   = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const recognitionRef = useRef<unknown>(null);
+  const recognitionRef = useRef<any>(null);
 
   // ── Load recent searches (client-only) ──────────────────────────────────────
   useEffect(() => {
@@ -99,14 +100,14 @@ export default function SmartTriageBar({ onResult }: SmartTriageBarProps) {
     setPreview("loading");
     debounceRef.current = setTimeout(async () => {
       try {
-        const r = await analyzeSymptoms(input);
+        const r = await analyzeSymptoms(input, { health_context: healthContext });
         setPreview(r.status as PreviewState);
       } catch {
         setPreview("idle");
       }
     }, DEBOUNCE_MS);
     return () => clearTimeout(debounceRef.current);
-  }, [input]);
+  }, [input, healthContext]);
 
   // ── Persist recent ────────────────────────────────────────────────────────
   const saveRecent = useCallback((q: string) => {
@@ -124,7 +125,7 @@ export default function SmartTriageBar({ onResult }: SmartTriageBarProps) {
     setSubmitting(true);
     setError(null);
     try {
-      const r = await analyzeSymptoms(text);
+      const r = await analyzeSymptoms(text, { health_context: healthContext });
       saveRecent(text);
       onResult(r);
       setInput("");
@@ -138,7 +139,7 @@ export default function SmartTriageBar({ onResult }: SmartTriageBarProps) {
     } finally {
       setSubmitting(false);
     }
-  }, [input, onResult, saveRecent]);
+  }, [input, onResult, saveRecent, healthContext]);
 
   // ── Voice input ────────────────────────────────────────────────────────────
   const handleVoice = useCallback(() => {

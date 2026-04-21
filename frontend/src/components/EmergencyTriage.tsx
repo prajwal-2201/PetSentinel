@@ -53,16 +53,23 @@ export default function EmergencyTriage() {
             </ul>
           </div>
           {/* Action Buttons */}
-          <div className="flex flex-col gap-4 mt-8">
-            <button className="w-full min-h-[64px] bg-tertiary-dim text-tertiary-container font-headline font-bold text-xl rounded-md uppercase tracking-wide flex items-center justify-center gap-3 transition-transform active:scale-95 shadow-[0px_10px_20px_rgba(0,0,0,0.3)] hover:bg-tertiary">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>call</span>
-              Connect to 24/7 Bangalore Emergency Vet
-            </button>
-            <button className="w-full min-h-[56px] bg-transparent border-2 border-tertiary-dim text-tertiary-dim font-headline font-bold text-lg rounded-md uppercase tracking-wide flex items-center justify-center gap-3 transition-colors hover:bg-tertiary-dim/10 active:scale-95">
-              <span className="material-symbols-outlined">play_circle</span>
-              Watch Emergency Maneuver Video
-            </button>
-          </div>
+          <div className="space-y-4">
+        <a 
+          href="tel:+918022221188"
+          className="w-full bg-[#b31b25] text-white font-headline font-bold py-5 rounded-xl flex items-center justify-center gap-3 shadow-[0_12px_40px_rgba(179,27,37,0.3)] hover:scale-[1.02] active:scale-95 transition-all"
+        >
+          <span className="material-symbols-outlined">call</span>
+          Connect to 24/7 Emergency Vet
+        </a>
+        <a 
+          href="https://www.youtube.com/results?search_query=emergency+pet+aspiration+maneuver"
+          target="_blank"
+          className="w-full bg-surface-container-high text-on-surface font-label py-4 rounded-xl flex items-center justify-center gap-3 border border-outline-variant/20 hover:bg-surface-container-highest transition-colors"
+        >
+          <span className="material-symbols-outlined">play_circle</span>
+          Watch Emergency Maneuver Video
+        </a>
+      </div>
         </div>
       </main>
 

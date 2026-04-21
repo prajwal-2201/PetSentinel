@@ -51,6 +51,7 @@ class SupervisorAgent:
         pet_species: str = None,
         pet_age_years: float = None,
         pet_weight_kg: float = None,
+        health_context: str = None,
     ) -> TriageResponse:
         session_id = str(uuid.uuid4())[:8]
 
@@ -85,6 +86,7 @@ class SupervisorAgent:
             pet_species=pet_species,
             pet_age_years=pet_age_years,
             pet_weight_kg=pet_weight_kg,
+            health_context=health_context,
         )
 
         ml_severity = worker_result.ml_predicted_severity
