@@ -57,7 +57,7 @@ PetSentinel is a comprehensive pet health management platform that combines cutt
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/petsentinel.git
+   git clone https://github.com/prajwal-2201/petsentinel.git
    cd petsentinel
    ```
 
